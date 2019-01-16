@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 
 struct _BlockDevice {
 
@@ -10,7 +11,7 @@ struct _BlockDevice {
 //
 //        char*           model;          /**< \brief description of hardware
 //                                             (manufacturer, model) */
-//        char*           path;           /**< device /dev entry */
+          char*           path;           /**< device /dev entry */
 //
 //        PedDeviceType   type;           /**< SCSI, IDE, etc. \sa PedDeviceType */
 //        long long       sector_size;            /**< logical sector size */
@@ -35,13 +36,17 @@ struct _BlockDevice {
 //     Following is modelled after LinuxSpecific (libparted/arch/linux.h)
 
   	int	fd;
-//	int	major;
-//	int	minor;
+  	int	major;
+  	int	minor;
 //	char*	dmtype;         /**< device map target type */
 #if USE_BLKID
         blkid_probe probe;
         blkid_topology topology;
 #endif
+
+    // TQ84...
+
+    struct    stat stat_;
 };
 
 typedef struct _BlockDevice BlockDevice;
