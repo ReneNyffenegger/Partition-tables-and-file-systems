@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/sysmacros.h>
 
 #include "structs/BlockDevice.h"
+#include "structs/MSDosPartitionTable.h"
 
 #define SCSI_DISK0_MAJOR         8
 #define SCSI_CDROM_MAJOR         11
