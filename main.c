@@ -1,11 +1,13 @@
-#include <stdio.h>
-#include <fcntl.h>
+// #include <stdio.h>
+// #include <fcntl.h>
 #include <stdlib.h>
-#include <stdint.h>
+// #include <stdint.h>
 #include <sys/sysmacros.h>
 
 #include "structs/BlockDevice.h"
 #include "structs/MSDosPartitionTable.h"
+
+#include <stdio.h>
 
 #define SCSI_DISK0_MAJOR         8
 #define SCSI_CDROM_MAJOR         11
@@ -26,13 +28,9 @@ void openBlockDevice(BlockDevice* b) {
  // Modelled after libparted: linux_open() - libparted/arch/linux.c
  //
 
-    b->fd   = open(b->path, O_RDONLY);
+    b->f    = fopen(b->path, "r");
 
-    if (b->fd == -1) {
-      printf("b->fd = %d\n", b->fd);
-      exit(-1);
-    }
-
+    if (!b->f) exit(1);
 }
 
 void stat_(BlockDevice* b) {

@@ -1,3 +1,5 @@
+#include <stdint.h>  // uint8_t etc.
+
 /* note: lots of bit-bashing here, thus, you shouldn't look inside it.
  * Use chs_to_sector() and sector_to_chs() instead.
  */
