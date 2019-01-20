@@ -78,6 +78,21 @@ void determineDeviceType(BlockDevice* b) {
      }
 }
 
+int isMSDosPartitionTable(BlockDevice *b, struct MSDosPartitionTable *partitionTable) {
+
+ //
+ // Read first sector
+ //
+    fseek(b->f, 0, SEEK_SET);
+    fread(partitionTable, sizeof(*partitionTable), 1, b->f);
+
+    return partitionTable->magic[0] == 0x55 && 
+           partitionTable->magic[1] == 0xaa;
+
+//  printf("low: %x, high: %x\n", partitionTable->magic[0], partitionTable->magic[1]);
+
+}
+
 int main() {
 
   BlockDevice blockDevice;
@@ -88,5 +103,10 @@ int main() {
   stat_(&blockDevice);
 
   determineDeviceType(&blockDevice);
+
+  struct MSDosPartitionTable msdosPartitionTable;
+  if (isMSDosPartitionTable(&blockDevice, &msdosPartitionTable)) {
+    printf("Device has a MSDos partition table.\n");
+  }
 
 }
