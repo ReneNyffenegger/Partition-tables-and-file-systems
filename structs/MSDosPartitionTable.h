@@ -4,7 +4,18 @@
 
 /* ripped from Linux source */
 struct /* parted names it: _DosRawTable */  MSDosPartitionTable {
-    char                      boot_code [440];
+    union {
+     //
+     // The first two bytes of the boot code apparently also indicate
+     // the type of the MBR as follows:
+     //    fa 33: Dos 3.3 through Windows 95 a
+     //    33 c0: Windows 95B, 98, 98SE, ME, 2000, XP, Vista 
+     //    fa eb: LILO
+     //    eb 3c: Windows Floppy Disk boot record 
+        unsigned char          type      [  2];
+     // --------------------------------------------------------------
+        char                   boot_code [440];
+    };
  // ------------------------------------------------------------------
  // mbr_signature apparently is a unique ID.
  // Beginning with Windows 2K, the value of mbr_signature is stored
