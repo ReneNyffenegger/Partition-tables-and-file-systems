@@ -47,6 +47,7 @@ struct _BlockDevice {
     // TQ84...
 
     struct    stat stat_;
+
 };
 
 typedef struct _BlockDevice BlockDevice;

@@ -52,30 +52,32 @@ void stat_(BlockDevice* b) {
     b->minor = minor(b->stat_.st_rdev);
 }
 
-void determineDeviceType(BlockDevice* b) {
+int isSCSI(BlockDevice* b) {
  //
  // See libparted/arch/linux.c - _device_probe_type
  //
-    if (SCSI_BLK_MAJOR (b->major) && (b->minor % 0x10 == 0)) {
-      printf("SCSI\n");
-    }
-    else if (b->major ==  3 ||
-             b->major == 22 ||
-             b->major == 33 ||
-             b->major == 34 ||
-             b->major == 56 ||
-             b->major == 57) {
+    return SCSI_BLK_MAJOR (b->major) && (b->minor % 0x10 == 0);
+}
+int isIDE(BlockDevice* b) {
+ //
+ // See libparted/arch/linux.c - _device_probe_type
+ //
+
+    if (b->major ==  3 ||
+        b->major == 22 ||
+        b->major == 33 ||
+        b->major == 34 ||
+        b->major == 56 ||
+        b->major == 57) {
  
        if (b->minor & 0x40) {
-         printf("IDE");
+         return 1;
        }
        else {
          printf("almost IDE");
        }
-     }
-     else {
-        printf("TODO ?\n");
-     }
+    }
+    return 0;
 }
 
 int main() {
@@ -84,9 +86,13 @@ int main() {
   blockDevice.path = "/dev/sda";
 
   openBlockDevice    (&blockDevice);
-
-  stat_(&blockDevice);
-
-  determineDeviceType(&blockDevice);
+  stat_              (&blockDevice);
+  
+  if (isSCSI(&blockDevice)) {
+     printf("SCSI\n");
+  }
+  else if (isIDE(&blockDevice)) {
+     printf("IDE\n");
+  }
 
 }
