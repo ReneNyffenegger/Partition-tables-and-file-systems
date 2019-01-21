@@ -103,7 +103,9 @@ void dissaemble_msdos_boot_code(struct MSDosPartitionTable *t) {
   fwrite(t->boot_code, sizeof(t->boot_code), 1, f);
   fclose(f);
 
-  system("objdump -D -Mintel,x86-64 -b binary -m i386 -z msdos_boot_code.bin");
+//system("objdump -D -b binary -m i386  -Mintel,x86-64 -z msdos_boot_code.bin");
+//system("objdump -D -b binary -m i386  -Mintel           msdos_boot_code.bin");
+  system("objdump -D -b binary -m i8086 -Mintel           msdos_boot_code.bin");
 
 }
 
