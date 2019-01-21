@@ -95,6 +95,18 @@ int isMSDosPartitionTable(BlockDevice *b, struct MSDosPartitionTable *partitionT
 
 }
 
+void dissaemble_msdos_boot_code(struct MSDosPartitionTable *t) {
+
+  FILE *f = fopen("msdos_boot_code.bin", "w");
+  if (!f) exit(2);
+
+  fwrite(t->boot_code, sizeof(t->boot_code), 1, f);
+  fclose(f);
+
+  system("objdump -D -Mintel,x86-64 -b binary -m i386 msdos_boot_code.bin");
+
+}
+
 int main() {
 
   BlockDevice blockDevice;
@@ -113,6 +125,9 @@ int main() {
   struct MSDosPartitionTable msdosPartitionTable;
   if (isMSDosPartitionTable(&blockDevice, &msdosPartitionTable)) {
     printf("Device has a MSDos partition table.\n");
+
+    dissaemble_msdos_boot_code(&msdosPartitionTable);
+
   }
 
 }

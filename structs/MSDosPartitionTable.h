@@ -5,7 +5,14 @@
 /* ripped from Linux source */
 struct /* parted names it: _DosRawTable */  MSDosPartitionTable {
     char                      boot_code [440];
-    uint32_t                  mbr_signature;  /* really a unique ID */
+ // ------------------------------------------------------------------
+ // mbr_signature apparently is a unique ID.
+ // Beginning with Windows 2K, the value of mbr_signature is stored
+ // in the registry under
+ //     HKLM\System\MountedDevices
+ //
+    uint32_t                  mbr_signature;
+ // ------------------------------------------------------------------
     uint16_t                  Unknown;
     struct MSDosPartition     partitions [NOF_MSDOS_PRIMARY_PARTITIONS];
  // ------------------------------------------------------------------
