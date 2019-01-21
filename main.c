@@ -1,9 +1,13 @@
-#include <stdio.h>
-#include <fcntl.h>
+// #include <stdio.h>
+// #include <fcntl.h>
 #include <stdlib.h>
+// #include <stdint.h>
 #include <sys/sysmacros.h>
 
 #include "structs/BlockDevice.h"
+#include "structs/MSDosPartitionTable.h"
+
+#include <stdio.h>
 
 #define SCSI_DISK0_MAJOR         8
 #define SCSI_CDROM_MAJOR         11
@@ -24,13 +28,9 @@ void openBlockDevice(BlockDevice* b) {
  // Modelled after libparted: linux_open() - libparted/arch/linux.c
  //
 
-    b->fd   = open(b->path, O_RDONLY);
+    b->f    = fopen(b->path, "r");
 
-    if (b->fd == -1) {
-      printf("b->fd = %d\n", b->fd);
-      exit(-1);
-    }
-
+    if (!b->f) exit(1);
 }
 
 void stat_(BlockDevice* b) {
@@ -80,6 +80,21 @@ int isIDE(BlockDevice* b) {
     return 0;
 }
 
+int isMSDosPartitionTable(BlockDevice *b, struct MSDosPartitionTable *partitionTable) {
+
+ //
+ // Read first sector
+ //
+    fseek(b->f, 0, SEEK_SET);
+    fread(partitionTable, sizeof(*partitionTable), 1, b->f);
+
+    return partitionTable->magic[0] == 0x55 && 
+           partitionTable->magic[1] == 0xaa;
+
+//  printf("low: %x, high: %x\n", partitionTable->magic[0], partitionTable->magic[1]);
+
+}
+
 int main() {
 
   BlockDevice blockDevice;
@@ -93,6 +108,11 @@ int main() {
   }
   else if (isIDE(&blockDevice)) {
      printf("IDE\n");
+  }
+
+  struct MSDosPartitionTable msdosPartitionTable;
+  if (isMSDosPartitionTable(&blockDevice, &msdosPartitionTable)) {
+    printf("Device has a MSDos partition table.\n");
   }
 
 }

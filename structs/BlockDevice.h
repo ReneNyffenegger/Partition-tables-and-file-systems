@@ -1,3 +1,4 @@
+#include <stdio.h>    // FILE
 #include <sys/stat.h>
 
 struct _BlockDevice {
@@ -35,13 +36,14 @@ struct _BlockDevice {
 //
 //     Following is modelled after LinuxSpecific (libparted/arch/linux.h)
 
-  	int	fd;
-  	int	major;
-  	int	minor;
-//	char*	dmtype;         /**< device map target type */
+//	int	fd;
+    FILE     *f;
+  	int	      major;
+  	int	      minor;
+//	char*    	dmtype;         /**< device map target type */
 #if USE_BLKID
-        blkid_probe probe;
-        blkid_topology topology;
+              blkid_probe probe;
+              blkid_topology topology;
 #endif
 
     // TQ84...
