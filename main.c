@@ -95,7 +95,7 @@ int isMSDosPartitionTable(BlockDevice *b, struct MSDosPartitionTable *partitionT
 
 }
 
-void dissaemble_msdos_boot_code(struct MSDosPartitionTable *t) {
+void disassemble_msdos_boot_code(struct MSDosPartitionTable *t) {
 
   FILE *f = fopen("msdos_boot_code.bin", "w");
   if (!f) exit(2);
@@ -134,7 +134,11 @@ int main() {
     else if (msdosPartitionTable.type[0] == 0xeb && msdosPartitionTable.type[1] == 0x3c) printf("  Type = Windows floopy disk\n");
     else                                                                                 printf("  Unrecognized type\n");
 
-    dissaemble_msdos_boot_code(&msdosPartitionTable);
+//  disassemble_msdos_boot_code(&msdosPartitionTable);
+
+    for (int partNo = 0; partNo < NOF_MSDOS_PRIMARY_PARTITIONS; partNo++) {
+      printf("    Partition %2d: type = 0x%02x\n", partNo, msdosPartitionTable.partitions[partNo].type);
+    }
 
   }
 
