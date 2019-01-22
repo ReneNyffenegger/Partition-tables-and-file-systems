@@ -8,6 +8,7 @@
 #include "structs/MSDosPartitionTable.h"
 
 #include <stdio.h>
+#include <inttypes.h> // PRIu32 etc.
 
 #define SCSI_DISK0_MAJOR         8
 #define SCSI_CDROM_MAJOR         11
@@ -136,8 +137,9 @@ int main() {
 
 //  disassemble_msdos_boot_code(&msdosPartitionTable);
 
+    printf("     #   type  1st sector      length\n");
     for (int partNo = 0; partNo < NOF_MSDOS_PRIMARY_PARTITIONS; partNo++) {
-      printf("    Partition %2d: type = 0x%02x\n", partNo, msdosPartitionTable.partitions[partNo].type);
+      printf("    %2d:  0x%02x  %10"PRIu32"  %10"PRIu32"\n", partNo, msdosPartitionTable.partitions[partNo].type, msdosPartitionTable.partitions[partNo].first_sector, msdosPartitionTable.partitions[partNo].nof_sectors);
     }
 
   }

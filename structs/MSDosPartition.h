@@ -29,9 +29,9 @@ struct /* parted names it: _DosRawPartition */ MSDosPartition {
 //     means: hidden.
 //
 //
-    uint8_t    type;       /* 04: partition type */
+    uint8_t    type;            /* 04: partition type */
 //  ----------------------------------------------
-    RawCHS     chs_end;    /* 05: */
-    uint32_t   start;      /* 08: starting sector counting from 0 */
-    uint32_t   length;     /* 0c: nr of sectors in partition */
+    RawCHS     chs_end;         /* 05: */
+    uint32_t   first_sector;    /* 08: starting sector counting from 0 */
+    uint32_t   nof_sectors;     /* 0c: nr of sectors in partition */
 } __attribute__((packed));
