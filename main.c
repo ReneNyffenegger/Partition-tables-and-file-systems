@@ -129,11 +129,11 @@ int main() {
   if (isMSDosPartitionTable(&blockDevice, &msdosPartitionTable)) {
     printf("Device has a MSDos partition table.\n");
 
-    if      (msdosPartitionTable.type[0] == 0xfa && msdosPartitionTable.type[1] == 0x33) printf("  Type = Dos 3.3 through Windows 95a\n");
-    else if (msdosPartitionTable.type[0] == 0x33 && msdosPartitionTable.type[1] == 0xc0) printf("  Type = Windows 95B, 98, 98SE, ME, 2K, XP or Vista\n");
-    else if (msdosPartitionTable.type[0] == 0xfa && msdosPartitionTable.type[1] == 0xeb) printf("  Type = LILO\n");
-    else if (msdosPartitionTable.type[0] == 0xeb && msdosPartitionTable.type[1] == 0x3c) printf("  Type = Windows floopy disk\n");
-    else                                                                                 printf("  Unrecognized type\n");
+    if      (msdosPartitionTable.version[0] == 0xfa && msdosPartitionTable.version[1] == 0x33) printf("  MBR version = Dos 3.3 through Windows 95a\n");
+    else if (msdosPartitionTable.version[0] == 0x33 && msdosPartitionTable.version[1] == 0xc0) printf("  MBR version = Windows 95B, 98, 98SE, ME, 2K, XP or Vista\n");
+    else if (msdosPartitionTable.version[0] == 0xfa && msdosPartitionTable.version[1] == 0xeb) printf("  MBR version = LILO\n");
+    else if (msdosPartitionTable.version[0] == 0xeb && msdosPartitionTable.version[1] == 0x3c) printf("  MBR version = Windows floopy disk\n");
+    else                                                                                       printf("  Unrecognized MBR version %02X%02X.\n", msdosPartitionTable.version[0], msdosPartitionTable.version[1]);
 
 //  disassemble_msdos_boot_code(&msdosPartitionTable);
 

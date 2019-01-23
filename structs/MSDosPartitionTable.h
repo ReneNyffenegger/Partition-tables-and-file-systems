@@ -7,12 +7,12 @@ struct /* parted names it: _DosRawTable */  MSDosPartitionTable {
     union {
      //
      // The first two bytes of the boot code apparently also indicate
-     // the type of the MBR as follows:
+     // the version of the MBR as follows (https://www.bibase.com/mbr.htm):
      //    fa 33: Dos 3.3 through Windows 95 a
      //    33 c0: Windows 95B, 98, 98SE, ME, 2000, XP, Vista 
      //    fa eb: LILO
      //    eb 3c: Windows Floppy Disk boot record 
-        unsigned char          type      [  2];
+        unsigned char          version   [  2];
      // --------------------------------------------------------------
         char                   boot_code [440];
     };

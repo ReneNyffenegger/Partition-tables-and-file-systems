@@ -14,7 +14,7 @@ struct /* parted names it: _DosRawPartition */ MSDosPartition {
     uint8_t    boot_ind;   /* 00:  0x80 - active */
     RawCHS     chs_start;  /* 01: */
 //  ----------------------------------------------
-//    Partition type:
+//    Partition type (https://www.win.tue.nl/~aeb/partitions/partition_types-1.html)
 //        0x00:  empty
 //        0x01:  FAT12
 //        0x04:  FAT16 SM (?)
