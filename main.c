@@ -5,7 +5,7 @@
 #include <sys/sysmacros.h>
 
 #include "structs/BlockDevice.h"
-#include "structs/MSDosPartitionTable.h"
+#include "structs/MSDosMBR.h"
 
 #include <stdio.h>
 #include <inttypes.h> // PRIu32 etc.
@@ -81,22 +81,22 @@ int isIDE(BlockDevice* b) {
     return 0;
 }
 
-int isMSDosPartitionTable(BlockDevice *b, struct MSDosPartitionTable *partitionTable) {
+int isMSDosMBR(BlockDevice *b, struct MSDosMBR *mbr) {
 
  //
  // Read first sector
  //
     fseek(b->f, 0, SEEK_SET);
-    fread(partitionTable, sizeof(*partitionTable), 1, b->f);
+    fread(mbr, sizeof(*mbr), 1, b->f);
 
-    return partitionTable->magic[0] == 0x55 && 
-           partitionTable->magic[1] == 0xaa;
+    return mbr->magic[0] == 0x55 && 
+           mbr->magic[1] == 0xaa;
 
-//  printf("low: %x, high: %x\n", partitionTable->magic[0], partitionTable->magic[1]);
+//  printf("low: %x, high: %x\n", mbr->magic[0], mbr->magic[1]);
 
 }
 
-void disassemble_msdos_boot_code(struct MSDosPartitionTable *t) {
+void disassemble_msdos_boot_code(struct MSDosMBR *t) {
 
   FILE *f = fopen("msdos_boot_code.bin", "w");
   if (!f) exit(2);
@@ -125,21 +125,21 @@ int main() {
      printf("IDE\n");
   }
 
-  struct MSDosPartitionTable msdosPartitionTable;
-  if (isMSDosPartitionTable(&blockDevice, &msdosPartitionTable)) {
+  struct MSDosMBR mbr;
+  if (isMSDosMBR(&blockDevice, &mbr)) {
     printf("Device has a MSDos partition table.\n");
 
-    if      (msdosPartitionTable.version[0] == 0xfa && msdosPartitionTable.version[1] == 0x33) printf("  MBR version = Dos 3.3 through Windows 95a\n");
-    else if (msdosPartitionTable.version[0] == 0x33 && msdosPartitionTable.version[1] == 0xc0) printf("  MBR version = Windows 95B, 98, 98SE, ME, 2K, XP or Vista\n");
-    else if (msdosPartitionTable.version[0] == 0xfa && msdosPartitionTable.version[1] == 0xeb) printf("  MBR version = LILO\n");
-    else if (msdosPartitionTable.version[0] == 0xeb && msdosPartitionTable.version[1] == 0x3c) printf("  MBR version = Windows floopy disk\n");
-    else                                                                                       printf("  Unrecognized MBR version %02X%02X.\n", msdosPartitionTable.version[0], msdosPartitionTable.version[1]);
+    if      (mbr.version[0] == 0xfa && mbr.version[1] == 0x33) printf("  MBR version = Dos 3.3 through Windows 95a\n");
+    else if (mbr.version[0] == 0x33 && mbr.version[1] == 0xc0) printf("  MBR version = Windows 95B, 98, 98SE, ME, 2K, XP or Vista\n");
+    else if (mbr.version[0] == 0xfa && mbr.version[1] == 0xeb) printf("  MBR version = LILO\n");
+    else if (mbr.version[0] == 0xeb && mbr.version[1] == 0x3c) printf("  MBR version = Windows floopy disk\n");
+    else                                                                                       printf("  Unrecognized MBR version %02X%02X.\n", mbr.version[0], mbr.version[1]);
 
-//  disassemble_msdos_boot_code(&msdosPartitionTable);
+//  disassemble_msdos_boot_code(&mbr);
 
     printf("     #   type  1st sector      length\n");
     for (int partNo = 0; partNo < NOF_MSDOS_PRIMARY_PARTITIONS; partNo++) {
-      printf("    %2d:  0x%02x  %10"PRIu32"  %10"PRIu32"\n", partNo, msdosPartitionTable.partitions[partNo].type, msdosPartitionTable.partitions[partNo].first_sector, msdosPartitionTable.partitions[partNo].nof_sectors);
+      printf("    %2d:  0x%02x  %10"PRIu32"  %10"PRIu32"\n", partNo, mbr.partitions[partNo].type, mbr.partitions[partNo].first_sector, mbr.partitions[partNo].nof_sectors);
     }
 
   }

@@ -2,8 +2,13 @@
 
 #define NOF_MSDOS_PRIMARY_PARTITIONS 4
 
-/* ripped from Linux source */
-struct /* parted names it: _DosRawTable */  MSDosPartitionTable {
+
+struct /* parted names it: _DosRawTable */  MSDosMBR {
+//
+//   The MBR (Master Boot Record)
+//
+//   Originally ripped from Linux source.
+//
     union {
      //
      // The first two bytes of the boot code apparently also indicate
