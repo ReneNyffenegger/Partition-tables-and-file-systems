@@ -4,6 +4,8 @@
 // #include <stdint.h>
 #include <sys/sysmacros.h>
 
+typedef unsigned long long sector;
+
 #include "structs/BlockDevice.h"
 #include "structs/MSDosMBR.h"
 
@@ -137,9 +139,14 @@ int main() {
 
 //  disassemble_msdos_boot_code(&mbr);
 
-    printf("     #   type  1st sector      length\n");
+    printf("     #   type  1st sector      length   last sector\n");
     for (int partNo = 0; partNo < NOF_MSDOS_PRIMARY_PARTITIONS; partNo++) {
-      printf("    %2d:  0x%02x  %10"PRIu32"  %10"PRIu32"\n", partNo, mbr.partitions[partNo].type, mbr.partitions[partNo].first_sector, mbr.partitions[partNo].nof_sectors);
+
+      sector sector_1st  = mbr.partitions[partNo].first_sector;
+      sector nof_sectors = mbr.partitions[partNo].nof_sectors ;
+      sector sector_last = sector_1st + nof_sectors - 1;
+
+      printf("    %2d:  0x%02x  %10"PRIu32"  %10"PRIu32"    %10"PRIu32"\n", partNo, mbr.partitions[partNo].type, sector_1st, nof_sectors, sector_last);
     }
 
   }
