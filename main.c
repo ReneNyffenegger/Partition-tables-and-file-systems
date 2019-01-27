@@ -112,13 +112,13 @@ void disassemble_msdos_boot_code(struct MSDosMBR *t) {
 
 }
 
-char* partitionTypeToString(int type) {
+char const* partitionTypeToString(uint8_t type) {
    if (type == 0x00) return "Empty";
    if (type == 0x01) return "FAT12 ";
    if (type == 0x02) return "Xenix";
    if (type == 0x03) return "Xenix";
    if (type == 0x04) return "FAT16 (max. 32 MB)";
-   if (type == 0x05) return "extended DOS-Partition" ;  // Max. 2 GB
+   if (type == 0x05) return "Extended DOS-Partition" ;  // Max. 2 GB
    if (type == 0x06) return "FAT16"                  ;  // Max. 2 GB
    if (type == 0x07) return "HPFS/NTFS";
    if (type == 0x08) return "AIX ";
@@ -129,15 +129,15 @@ char* partitionTypeToString(int type) {
    if (type == 0x0E) return "FAT16 (LBA)";
    if (type == 0x0F) return "Extended partition (LBA)";  // More than 1024 cylinders
    if (type == 0x10) return "OPUS"                    ;  // Or »hidden« ?
-   if (type == 0x11) return "hidden FAT12";
+   if (type == 0x11) return "Hidden FAT12";
    if (type == 0x12) return "Compaq diagnost";
-   if (type == 0x14) return "hidden FAT16 bis 32MB";
-   if (type == 0x16) return "hidden FAT16";
-   if (type == 0x17) return "hidden HPFS / NTFS";
+   if (type == 0x14) return "Hidden FAT16 bis 32MB";
+   if (type == 0x16) return "Hidden FAT16";
+   if (type == 0x17) return "Hidden HPFS / NTFS";
    if (type == 0x18) return "AST Windows swap";
-   if (type == 0x1B) return "hidden WIN95 FAT32";
-   if (type == 0x1C) return "hidden WIN95 FAT32 (LBA)";
-   if (type == 0x1E) return "hidden WIN95 FAT16 (LBA)";
+   if (type == 0x1B) return "Hidden WIN95 FAT32";
+   if (type == 0x1C) return "Hidden WIN95 FAT32 (LBA)";
+   if (type == 0x1E) return "Hidden WIN95 FAT16 (LBA)";
    if (type == 0x24) return "NEC DOS";
    if (type == 0x27) return "MSFT Recovery";
    if (type == 0x39) return "Plan 9";
@@ -206,6 +206,15 @@ char* partitionTypeToString(int type) {
 
 }
 
+int isExtendedPartitiontype(uint8_t type) {
+  if (type == 0x05  /* Extended DOS Partition */ ||
+      type == 0x0F  /* Extended LBA           */ ||
+      type == 0x85  /* LINUX extended         */) {
+    return 1;
+  }
+  return 0;
+}
+
 int main() {
 
   BlockDevice blockDevice;
@@ -236,15 +245,15 @@ int main() {
 
     int partNo = 1;
 
-    printf("     #   type                             1st sector      length   last sector\n");
+    printf("     #   Type                            1st sector      length   last sector  Ext\n");
     for (struct MSDosPartition *part = &mbr.partitions[0]; part< &mbr.partitions[NOF_MSDOS_PRIMARY_PARTITIONS]; part ++, partNo++) {
       sector sector_1st  = part -> first_sector;
       sector nof_sectors = part -> nof_sectors ;
       sector sector_last = sector_1st + nof_sectors - 1;
 
-      char* type = partitionTypeToString(part -> type);
+      char const* type = partitionTypeToString(part -> type);
 
-      printf("    %2d:  0x%02x  %-25s  %10"PRIu32"  %10"PRIu32"    %10"PRIu32"\n", partNo, part->type, type, sector_1st, nof_sectors, sector_last);
+      printf("    %2d:  0x%02x %-25s  %10llu  %10llu    %10llu  %-3s\n", partNo, part->type, type, sector_1st, nof_sectors, sector_last, isExtendedPartitiontype(part->type) ? "Ext": "");
     }
 
   }
