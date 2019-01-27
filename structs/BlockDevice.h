@@ -1,7 +1,7 @@
 #include <stdio.h>    // FILE
 #include <sys/stat.h>
 
-struct _BlockDevice {
+typedef struct /* _BlockDevice*/ {
 
        //
        // Modelled after libparted, PedDevice (include/parted/device.h)
@@ -50,6 +50,6 @@ struct _BlockDevice {
 
     struct    stat stat_;
 
-};
+} BlockDevice;
 
-typedef struct _BlockDevice BlockDevice;
+// typedef struct _BlockDevice BlockDevice;

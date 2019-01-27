@@ -3,7 +3,7 @@
 #define NOF_MSDOS_PRIMARY_PARTITIONS 4
 
 
-struct /* parted names it: _DosRawTable */  MSDosMBR {
+typedef struct /* parted names it: _DosRawTable */  {
 //
 //   The MBR (Master Boot Record)
 //
@@ -17,6 +17,12 @@ struct /* parted names it: _DosRawTable */  MSDosMBR {
      //    33 c0: Windows 95B, 98, 98SE, ME, 2000, XP, Vista 
      //    fa eb: LILO
      //    eb 3c: Windows Floppy Disk boot record 
+     //
+     //  https://github.com/joyent/syslinux/commit/d0f275981c9289dc4b8df64e72cd9902bf85aebe says: 
+     //     Apparently some BIOSes (including some Acer Travelmate machines)
+     //     require an MBR to start with 0x33; apparently Micro$oft MBRs start
+     //     with 33 C0, an alternate coding of the "xorw %ax,%ax" instruction.  As
+     //     such, follow suit to work on these braindead BIOSes.
         unsigned char          version   [  2];
      // --------------------------------------------------------------
         char                   boot_code [440];
@@ -30,7 +36,7 @@ struct /* parted names it: _DosRawTable */  MSDosMBR {
     uint32_t                  mbr_signature;
  // ------------------------------------------------------------------
     uint16_t                  Unknown;
-    struct MSDosPartition     partitions [NOF_MSDOS_PRIMARY_PARTITIONS];
+    MSDosPartitionTableEntry  partitions [NOF_MSDOS_PRIMARY_PARTITIONS];
  // ------------------------------------------------------------------
  // magic contains 0xaa55 in little endian format.
  //    Thus magic[0] is the low byte and should equal to 0x55 while
@@ -39,4 +45,4 @@ struct /* parted names it: _DosRawTable */  MSDosMBR {
     unsigned char             magic[2];
  // uint16_t                  magic;
  // ------------------------------------------------------------------
-} __attribute__((packed));
+}  __attribute__((packed)) MSDosMBR;

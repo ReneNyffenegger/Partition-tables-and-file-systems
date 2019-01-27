@@ -10,10 +10,15 @@ typedef struct {
 } __attribute__((packed)) RawCHS;
 
 /* ripped from Linux source */
-struct /* parted names it: _DosRawPartition */ MSDosPartition {
-    uint8_t    boot_ind;   /* 00:  0x80 - active */
-    RawCHS     chs_start;  /* 01: */
+typedef struct /* parted names it: _DosRawPartition */ {
+ //
+ // The boot indicator is either 0x80 (active) or 0x00 (inactive): 
+ //
+    uint8_t    boot_indicator;
+
+    RawCHS     partition_start_chs;
 //  ----------------------------------------------
+//
 //    Partition type (https://www.win.tue.nl/~aeb/partitions/partition_types-1.html)
 //        0x00:  empty
 //        0x01:  FAT12
@@ -28,10 +33,15 @@ struct /* parted names it: _DosRawPartition */ MSDosPartition {
 //     The FAT* and NTFS types can be combined with the 0x10 flag which
 //     means: hidden.
 //
+//     The partition type (of extended partitions?) allows to determine if
+//     CHS or LBA addressing is to be applied.
+//        0x05: CHS Addressing
+//        0x0F: LBA Addressing
 //
-    uint8_t    type;            /* 04: partition type */
+//
+    uint8_t    partition_type;
 //  ----------------------------------------------
-    RawCHS     chs_end;         /* 05: */
-    uint32_t   first_sector;    /* 08: starting sector counting from 0 */
-    uint32_t   nof_sectors;     /* 0c: nr of sectors in partition */
-} __attribute__((packed));
+    RawCHS     partition_end_chs;
+    uint32_t   partition_start_lba;
+    uint32_t   nof_sectors;
+}__attribute__((packed)) MSDosPartitionTableEntry;
