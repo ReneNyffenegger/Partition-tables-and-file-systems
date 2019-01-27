@@ -286,11 +286,13 @@ void showMSDosPartitions(BlockDevice* dev, MSDosMBR* mbr, int nofRecords, sector
 
       char const* type = partitionTypeToString(part);
 
-      printf("    %2d:  0x%02x %-25s  %-3s  %10llu + %10llu = %10llu  %10llu    %10llu  %-3s  %-3s\n", partNo, part->partition_type, type,
+      printf("    %2d:  0x%02x %-25s  %-3s  %10llu + %10llu = %10llu  %10llu    %10llu  %-3s  %-3s | %4d %4d %4d  %4d %4d %4d\n", partNo, part->partition_type, type,
           isLBAPartition(part) ? "LBA" : "CHS", 
           offset, start, sector_1st, nof_sectors, sector_last,
           isActivePartition(part) ? "Act" : "",
-          isExtendedPartitiontype(part) ? "Ext": "");
+          isExtendedPartitiontype(part) ? "Ext": "",
+          part->partition_start_chs.cylinder, part->partition_start_chs.head, part->partition_start_chs.sector,
+          part->partition_end_chs  .cylinder, part->partition_end_chs  .head  , part->partition_end_chs.sector);
 
       if (isExtendedPartitiontype(part)) {
 
@@ -349,7 +351,7 @@ int main() {
         printf("mbr->magic = %x %x\n", mbr.magic[0], mbr.magic[1]);
     printf("Device has a MSDos partition table.\n");
 
-    printf("     #   Type                            C/L      offset +      start = 1st sector      length   last sector  Act  Ext\n");
+    printf("     #   Type                            C/L      offset +      start = 1st sector      length   last sector  Act  Ext |    c    h    s       c    h   s\n");
     showMSDosPartitions(&blockDevice, &mbr, NOF_MSDOS_PRIMARY_PARTITIONS, 0/*, 0*/);
   }
 
