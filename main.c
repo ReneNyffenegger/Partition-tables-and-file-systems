@@ -85,6 +85,13 @@ int isIDE(BlockDevice* b) {
     return 0;
 }
 
+int checkMSDosBootRecordSignature(MSDosBootRecordSignature *signature) {
+
+    return (*signature)[0] == 0x55 && 
+           (*signature)[1] == 0xaa;
+
+}
+
 int isMSDosMBR(BlockDevice *b, MSDosMBR *mbr) {
 
  //
@@ -93,11 +100,7 @@ int isMSDosMBR(BlockDevice *b, MSDosMBR *mbr) {
     fseek(b->f, 0, SEEK_SET);
     fread(mbr, sizeof(*mbr), 1, b->f);
 
-    return mbr->magic[0] == 0x55 && 
-           mbr->magic[1] == 0xaa;
-
-//  printf("low: %x, high: %x\n", mbr->magic[0], mbr->magic[1]);
-
+    return checkMSDosBootRecordSignature(&mbr->msdos_boot_record_signature);
 }
 
 void disassemble_msdos_boot_code(MSDosMBR *t) {
@@ -237,6 +240,7 @@ int isLBAPartition(MSDosPartitionTableEntry* entry) {
 
 }
 
+
 sector CHS_to_LBA(RawCHS* chs) {
 
   int c = chs->cylinder + ((chs->sector >> 6) << 8);
@@ -260,7 +264,62 @@ int isExtendedPartitiontype(MSDosPartitionTableEntry* entry) {
   return 0;
 }
 
-void showMSDosPartitions(BlockDevice* dev, MSDosMBR* mbr, int nofRecords, sector offset/*, sector start__*/) {
+void printPartitionLine(MSDosPartitionTableEntry *entry, int partNo, sector sectorStartPrimaryOrExtended, sector sectorStartLogical) {
+
+      sector start       = entry -> partition_start_lba;
+      sector sector_1st  = start + sectorStartPrimaryOrExtended + sectorStartLogical;
+      sector nof_sectors = entry -> nof_sectors ;
+      sector sector_last = sector_1st + nof_sectors - 1;
+
+      char const* type = partitionTypeToString(entry);
+
+      printf("    %2d:  0x%02x %-25s  %-3s  %10llu + %10llu = %10llu  %10llu    %10llu  %-3s  %-3s | %4d %4d %4d  %4d %4d %4d\n", partNo, entry->partition_type, type,
+          isLBAPartition(entry) ? "LBA" : "CHS", 
+          sectorStartPrimaryOrExtended, start, sector_1st, nof_sectors, sector_last,
+          isActivePartition(entry) ? "Act" : "",
+          isExtendedPartitiontype(entry) ? "Ext": "",
+          entry->partition_start_chs.cylinder, entry->partition_start_chs.head, entry->partition_start_chs.sector,
+          entry->partition_end_chs  .cylinder, entry->partition_end_chs  .head  , entry->partition_end_chs.sector);
+
+}
+
+void showMSDosExtendedPartition(BlockDevice *dev, MSDosExtendedBootRecord *ebr, sector sectorStartExtended, sector sectorStartLogical) {
+
+    int partNo=5;
+
+    for (int i = 0; i<16; i ++) { if (ebr->unused_third_entry [i]) { printf("That was not expected!\n"); }}
+    for (int i = 0; i<16; i ++) { if (ebr->unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
+
+    if (!checkMSDosBootRecordSignature(&ebr->msdos_boot_record_signature)) {
+      printf("Unexpected boot record signature: %x %x\n", ebr->msdos_boot_record_signature[0], ebr->msdos_boot_record_signature[1]);
+    }
+
+    printPartitionLine(&ebr->thisLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
+
+    if (isExtendedPartitiontype(&ebr->nextLogicalPartition)) {
+
+         printPartitionLine(&ebr->nextLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
+         MSDosExtendedBootRecord ebrNext;
+ 
+         sector sector_1st = ebr->nextLogicalPartition.partition_start_lba + sectorStartExtended;
+ 
+         if (fseek(dev->f, sector_1st * sector_size, SEEK_SET)) {
+            perror("fseek");
+         }
+         if (fread(&ebrNext, sizeof(ebrNext), 1, dev->f) != 1) {
+            perror("fread");
+         }
+ 
+         for (int i = 0; i<16; i ++) { if (ebrNext.unused_third_entry [i]) { printf("That was not expected!\n"); }}
+         for (int i = 0; i<16; i ++) { if (ebrNext.unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
+ 
+         showMSDosExtendedPartition(dev, &ebrNext, sectorStartExtended, ebr->nextLogicalPartition.partition_start_lba                                            /*sector_1st* //*, start*/);
+    }
+
+
+}
+
+void showMSDosPartitions(BlockDevice* dev, MSDosMBR* mbr, int nofRecords, sector sectorStartPrimaryOrExtended/*, sector start__*/) {
 
   //  an extended partition looks like a whole disk with its own partition
   //  table and contains at most two partitions: a logical partition, and
@@ -275,43 +334,31 @@ void showMSDosPartitions(BlockDevice* dev, MSDosMBR* mbr, int nofRecords, sector
 
 //  disassemble_msdos_boot_code(&mbr);
 
-
     int partNo = 1;
 
     for (MSDosPartitionTableEntry *part = &mbr->partitions[0]; part< &mbr->partitions[nofRecords]; part ++, partNo++) {
-      sector start       = part -> partition_start_lba;
-      sector sector_1st  = start + offset;
-      sector nof_sectors = part -> nof_sectors ;
-      sector sector_last = sector_1st + nof_sectors - 1;
 
-      char const* type = partitionTypeToString(part);
-
-      printf("    %2d:  0x%02x %-25s  %-3s  %10llu + %10llu = %10llu  %10llu    %10llu  %-3s  %-3s | %4d %4d %4d  %4d %4d %4d\n", partNo, part->partition_type, type,
-          isLBAPartition(part) ? "LBA" : "CHS", 
-          offset, start, sector_1st, nof_sectors, sector_last,
-          isActivePartition(part) ? "Act" : "",
-          isExtendedPartitiontype(part) ? "Ext": "",
-          part->partition_start_chs.cylinder, part->partition_start_chs.head, part->partition_start_chs.sector,
-          part->partition_end_chs  .cylinder, part->partition_end_chs  .head  , part->partition_end_chs.sector);
+      printPartitionLine(part, partNo, 0, 0);
 
       if (isExtendedPartitiontype(part)) {
 
-        MSDosExtendedBootRecord mmm;
+        MSDosExtendedBootRecord ebr;
+
+        sector sector_1st = part->partition_start_lba;
 
         printf("going to read sector %llu\n", sector_1st);
         if (fseek(dev->f, sector_1st * sector_size, SEEK_SET)) {
            perror("fseek");
         }
-        if (fread(&mmm, sizeof(mmm), 1, dev->f) != 1) {
+        if (fread(&ebr, sizeof(ebr), 1, dev->f) != 1) {
            perror("fread");
         }
 
-        for (int i = 0; i<16; i ++) { if (mmm.unused_third_entry [i]) { printf("That was not expected!\n"); }}
-        for (int i = 0; i<16; i ++) { if (mmm.unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
+        if (! checkMSDosBootRecordSignature(&ebr.msdos_boot_record_signature)) {
+          printf("Unexpected MSDos boot record signature: %x %x\n", ebr.msdos_boot_record_signature[0], ebr.msdos_boot_record_signature[1]);
+        }
 
-        printf("mmm->magic = %x %x\n", mmm.magic[0], mmm.magic[1]);
-
-        showMSDosPartitions(dev, &mmm, NOF_MSDOS_EXTENDED_PARTITIONS_IN_BOOT_RECORD, offset ? offset : start/*, start*/);
+        showMSDosExtendedPartition(dev, &ebr, sector_1st, 0);
 
       }
     }
@@ -348,10 +395,9 @@ int main() {
 
   MSDosMBR mbr;
   if (isMSDosMBR(&blockDevice, &mbr)) {
-        printf("mbr->magic = %x %x\n", mbr.magic[0], mbr.magic[1]);
     printf("Device has a MSDos partition table.\n");
 
-    printf("     #   Type                            C/L      offset +      start = 1st sector      length   last sector  Act  Ext |    c    h    s       c    h   s\n");
+    printf("     #   Type                            C/L      st. Ext+      start = 1st sector      length   last sector  Act  Ext |    c    h    s     c    h    s\n");
     showMSDosPartitions(&blockDevice, &mbr, NOF_MSDOS_PRIMARY_PARTITIONS, 0/*, 0*/);
   }
 

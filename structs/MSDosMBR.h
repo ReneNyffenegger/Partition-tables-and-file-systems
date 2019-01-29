@@ -2,6 +2,7 @@
 
 #define NOF_MSDOS_PRIMARY_PARTITIONS 4
 
+typedef unsigned char MSDosBootRecordSignature[2];
 
 typedef struct /* parted names it: _DosRawTable */  {
 //
@@ -35,14 +36,13 @@ typedef struct /* parted names it: _DosRawTable */  {
  //
     uint32_t                  mbr_signature;
  // ------------------------------------------------------------------
-    uint16_t                  Unknown;
+    uint16_t                  unknown;
     MSDosPartitionTableEntry  partitions [NOF_MSDOS_PRIMARY_PARTITIONS];
  // ------------------------------------------------------------------
- // magic contains 0xaa55 in little endian format.
- //    Thus magic[0] is the low byte and should equal to 0x55 while
- //    magic[1] is the high byte and shoul equal to 0xaa.
+ // The msdos_boot_record_signature contains 0xaa55 in little endian format.
+ // Thus msdos_boot_record_signature[0] is the low byte and should equal to 0x55 while
+ // msdos_boot_record_signature[1] is the high byte and shoul equal to 0xaa.
  //
-    unsigned char             magic[2];
- // uint16_t                  magic;
+    MSDosBootRecordSignature  msdos_boot_record_signature;
  // ------------------------------------------------------------------
 }  __attribute__((packed)) MSDosMBR;

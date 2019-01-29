@@ -11,7 +11,7 @@ typedef struct {
 
  // --------------------------------------------------------------------------------------
  //
-                                   #define NOF_MSDOS_EXTENDED_PARTITIONS_IN_BOOT_RECORD 2
+//                                 #define NOF_MSDOS_EXTENDED_PARTITIONS_IN_BOOT_RECORD 2
  //
  // The first entry of an EBR points to the logical partition of that EBR.
  //
@@ -19,12 +19,17 @@ typedef struct {
  //   - points to the next EBR in the chain, or
  //   - is filled with zeroes
  //
-    MSDosPartitionTableEntry   partitions [NOF_MSDOS_EXTENDED_PARTITIONS_IN_BOOT_RECORD];
+//  MSDosPartitionTableEntry   partitions [NOF_MSDOS_EXTENDED_PARTITIONS_IN_BOOT_RECORD];
+    MSDosPartitionTableEntry   thisLogicalPartition;
+    MSDosPartitionTableEntry   nextLogicalPartition;
+    
 
     unsigned char unused_third_entry [16]; // should be filled with zeroes
     unsigned char unused_fourth_entry[16]; // should be filled with zeroes
 
-    unsigned char             magic[2];
-
+ //
+ // Analogous to msdos_boot_record_signature in MSDosMasterBootRecord.
+ //
+    MSDosBootRecordSignature  msdos_boot_record_signature;
 
 } MSDosExtendedBootRecord;

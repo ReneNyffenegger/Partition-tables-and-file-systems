@@ -51,5 +51,3 @@ typedef struct /* _BlockDevice*/ {
     struct    stat stat_;
 
 } BlockDevice;
-
-// typedef struct _BlockDevice BlockDevice;
