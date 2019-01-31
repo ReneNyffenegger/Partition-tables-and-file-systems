@@ -296,6 +296,8 @@ void showMSDosExtendedPartition(BlockDevice *dev, MSDosExtendedBootRecord *ebr, 
 
     printPartitionLine(&ebr->thisLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
 
+//  disassemble_msdos_boot_code(&ebr);
+
     if (isExtendedPartitiontype(&ebr->nextExtendedBootRecord)) {
 
          printPartitionLine(&ebr->nextExtendedBootRecord, partNo, sectorStartExtended, sectorStartLogical);
