@@ -45,4 +45,4 @@ typedef struct /* parted names it: _DosRawTable */  {
  //
     MSDosBootRecordSignature  msdos_boot_record_signature;
  // ------------------------------------------------------------------
-}  __attribute__((packed)) MSDosMBR;
+}  __attribute__((packed)) MSDosMasterBootRecord;

@@ -8,7 +8,7 @@ typedef unsigned long long sector;
 const sector sector_size = 512;
 
 #include "structs/BlockDevice.h"
-#include "structs/MSDosMBR.h"
+#include "structs/MSDosMasterBootRecord.h"
 #include "structs/MSDosExtendedBootRecord.h"
 
 #include <stdio.h>
@@ -92,7 +92,7 @@ int checkMSDosBootRecordSignature(MSDosBootRecordSignature *signature) {
 
 }
 
-int isMSDosMBR(BlockDevice *b, MSDosMBR *mbr) {
+int isMSDosMasterBootRecord(BlockDevice *b, MSDosMasterBootRecord *mbr) {
 
  //
  // Read first sector
@@ -103,7 +103,7 @@ int isMSDosMBR(BlockDevice *b, MSDosMBR *mbr) {
     return checkMSDosBootRecordSignature(&mbr->msdos_boot_record_signature);
 }
 
-void disassemble_msdos_boot_code(MSDosMBR *t) {
+void disassemble_msdos_boot_code(MSDosMasterBootRecord *t) {
 
   FILE *f = fopen("msdos_boot_code.bin", "w");
   if (!f) exit(2);
@@ -319,7 +319,7 @@ void showMSDosExtendedPartition(BlockDevice *dev, MSDosExtendedBootRecord *ebr, 
 
 }
 
-void showMSDosPartitions(BlockDevice* dev, MSDosMBR* mbr, int nofRecords, sector sectorStartPrimaryOrExtended/*, sector start__*/) {
+void showMSDosPartitions(BlockDevice* dev, MSDosMasterBootRecord* mbr, int nofRecords, sector sectorStartPrimaryOrExtended/*, sector start__*/) {
 
   //  an extended partition looks like a whole disk with its own partition
   //  table and contains at most two partitions: a logical partition, and
@@ -366,8 +366,8 @@ void showMSDosPartitions(BlockDevice* dev, MSDosMBR* mbr, int nofRecords, sector
 
 void checkSizes() {
   
-  if (sizeof(MSDosMBR) != 512) {
-    printf("sizeof(MSDosMBR) = %ld\n", sizeof(MSDosMBR));
+  if (sizeof(MSDosMasterBootRecord) != 512) {
+    printf("sizeof(MSDosMasterBootRecord) = %ld\n", sizeof(MSDosMasterBootRecord));
   }
 
   if (sizeof(MSDosExtendedBootRecord) != 512) {
@@ -393,8 +393,8 @@ int main() {
      printf("IDE\n");
   }
 
-  MSDosMBR mbr;
-  if (isMSDosMBR(&blockDevice, &mbr)) {
+  MSDosMasterBootRecord mbr;
+  if (isMSDosMasterBootRecord(&blockDevice, &mbr)) {
     printf("Device has a MSDos partition table.\n");
 
     printf("     #   Type                            C/L      st. Ext+      start = 1st sector      length   last sector  Act  Ext |    c    h    s     c    h    s\n");
