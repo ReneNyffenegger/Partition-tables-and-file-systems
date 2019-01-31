@@ -296,12 +296,12 @@ void showMSDosExtendedPartition(BlockDevice *dev, MSDosExtendedBootRecord *ebr, 
 
     printPartitionLine(&ebr->thisLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
 
-    if (isExtendedPartitiontype(&ebr->nextLogicalPartition)) {
+    if (isExtendedPartitiontype(&ebr->nextExtendedBootRecord)) {
 
-         printPartitionLine(&ebr->nextLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
+         printPartitionLine(&ebr->nextExtendedBootRecord, partNo, sectorStartExtended, sectorStartLogical);
          MSDosExtendedBootRecord ebrNext;
  
-         sector sector_1st = ebr->nextLogicalPartition.partition_start_lba + sectorStartExtended;
+         sector sector_1st = ebr->nextExtendedBootRecord.partition_start_lba + sectorStartExtended;
  
          if (fseek(dev->f, sector_1st * sector_size, SEEK_SET)) {
             perror("fseek");
@@ -313,7 +313,7 @@ void showMSDosExtendedPartition(BlockDevice *dev, MSDosExtendedBootRecord *ebr, 
          for (int i = 0; i<16; i ++) { if (ebrNext.unused_third_entry [i]) { printf("That was not expected!\n"); }}
          for (int i = 0; i<16; i ++) { if (ebrNext.unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
  
-         showMSDosExtendedPartition(dev, &ebrNext, sectorStartExtended, ebr->nextLogicalPartition.partition_start_lba                                            /*sector_1st* //*, start*/);
+         showMSDosExtendedPartition(dev, &ebrNext, sectorStartExtended, ebr->nextExtendedBootRecord.partition_start_lba                                            /*sector_1st* //*, start*/);
     }
 
 
