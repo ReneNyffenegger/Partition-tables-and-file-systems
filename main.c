@@ -14,7 +14,7 @@ const sector sector_size = 512;
 #include <stdio.h>
 #include <inttypes.h> // PRIu32 etc.
 
-#define SCSI_DISK0_MAJOR         8
+#define SCSI_DISK0_MAJOR          8
 #define SCSI_CDROM_MAJOR         11
 #define SCSI_DISK1_MAJOR         65
 #define SCSI_DISK7_MAJOR         71
@@ -300,15 +300,14 @@ void showMSDosExtendedBootRecord(BlockDevice *dev, MSDosExtendedBootRecord *ebr,
 
     int partNo=5;
 
-    for (int i = 0; i<16; i ++) { if (ebr->unused_third_entry [i]) { printf("That was not expected!\n"); }}
-    for (int i = 0; i<16; i ++) { if (ebr->unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
-
     if (!checkMSDosBootRecordSignature(&ebr->msdos_boot_record_signature)) {
       printf("Unexpected boot record signature: %x %x\n", ebr->msdos_boot_record_signature[0], ebr->msdos_boot_record_signature[1]);
     }
 
-    printPartitionLine(&ebr->thisLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
+    for (int i = 0; i<16; i ++) { if (ebr->unused_third_entry [i]) { printf("That was not expected!\n"); }}
+    for (int i = 0; i<16; i ++) { if (ebr->unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
 
+    printPartitionLine(&ebr->thisLogicalPartition, partNo, sectorStartExtended, sectorStartLogical);
 //  disassemble_msdos_boot_code(&ebr);
 
     if (isExtendedPartitiontype(&ebr->nextExtendedBootRecord)) {
@@ -317,23 +316,13 @@ void showMSDosExtendedBootRecord(BlockDevice *dev, MSDosExtendedBootRecord *ebr,
          MSDosExtendedBootRecord ebrNext;
  
          sector sector_1st = ebr->nextExtendedBootRecord.partition_start_lba + sectorStartExtended;
-
          readSector(sector_1st, dev, &ebrNext);
  
-//       if (fseek(dev->f, sector_1st * sector_size, SEEK_SET)) {
-//          perror("fseek");
-//       }
-//       if (fread(&ebrNext, sizeof(ebrNext), 1, dev->f) != 1) {
-//          perror("fread");
-//       }
+//       for (int i = 0; i<16; i ++) { if (ebrNext.unused_third_entry [i]) { printf("That was not expected!\n"); }}
+//       for (int i = 0; i<16; i ++) { if (ebrNext.unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
  
-         for (int i = 0; i<16; i ++) { if (ebrNext.unused_third_entry [i]) { printf("That was not expected!\n"); }}
-         for (int i = 0; i<16; i ++) { if (ebrNext.unused_fourth_entry[i]) { printf("That was not expected!\n"); }}
- 
-         showMSDosExtendedBootRecord(dev, &ebrNext, sectorStartExtended, ebr->nextExtendedBootRecord.partition_start_lba                                            /*sector_1st* //*, start*/);
+         showMSDosExtendedBootRecord(dev, &ebrNext, sectorStartExtended, ebr->nextExtendedBootRecord.partition_start_lba);
     }
-
-
 }
 
 void showMSDosMasterBootRecord(BlockDevice* dev, MSDosMasterBootRecord* mbr, int nofRecords, sector sectorStartPrimaryOrExtended/*, sector start__*/) {
