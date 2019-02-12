@@ -1,5 +1,7 @@
 # Partition tables and file systems.
 
+https://renenyffenegger.ch/notes/projects/Partition-tables-and-file-systems
+
 ## TODO
 
 http://thestarman.narod.ru/asm/mbr/VistaMBR.htm
